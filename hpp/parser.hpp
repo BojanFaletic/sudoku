@@ -5,6 +5,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -52,12 +53,22 @@ struct Sudoku_board {
   std::array<std::array<sudoku_number, SUDOKU_BRD_SIZE>, SUDOKU_BRD_SIZE> board;
   static constexpr uint size = SUDOKU_BRD_SIZE;
 
-
   sudoku_number &operator()(uint i, uint j) { return board[i][j]; }
   sudoku_number &operator()(Point const &pt) { return board[pt.y][pt.x]; }
   sudoku_number operator()(Point const &pt) const { return board[pt.y][pt.x]; }
 
   uint num_of_unsolved();
+
+  bool operator==(Sudoku_board const &sb) const{
+    for (uint i = 0; i < sb.size; i++) {
+      for (uint j = 0; j < sb.size; j++) {
+        const Point pt{i, j};
+        if (sb(pt) != (*this)(pt))
+          return false;
+      }
+    }
+    return true;
+  }
 
   friend std::ostream &operator<<(std::ostream &os, Sudoku_board const &sb);
   auto begin() const { return board.begin(); };

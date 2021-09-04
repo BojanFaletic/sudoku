@@ -7,7 +7,7 @@ numbers_rule gen_row(Sudoku_board const &bd, Point const &pt) {
 numbers_rule gen_column(Sudoku_board const &bd, Point const &pt) {
   numbers_rule nb;
   for (uint i = 0; i < bd.size; i++) {
-    nb[i] = bd({i, pt.x});
+    nb[i] = bd(Point(i, pt.x));
   }
   return nb;
 }
@@ -70,7 +70,7 @@ bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
   bool valid = false;
   for (Possible_number const &p : pn) {
     if (p.candidate.size() == 1) {
-      sb({p.pt.y, p.pt.x}) = p.candidate[0];
+      sb(p.pt) = p.candidate[0];
       valid = true;
     }
   }
@@ -78,6 +78,8 @@ bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
 }
 
 bool brute_fore_search(Sudoku_board &sb) {
+  single_solve(sb);
+
   std::vector<Possible_number> pn;
   for (Node const &nn : gen_nodes(sb)) {
     pn.push_back(find_candidates(nn));
@@ -109,9 +111,8 @@ bool brute_fore_search(Sudoku_board &sb) {
 
 void single_solve(Sudoku_board &sb) {
   while (true) {
-    std::vector<Node> n = gen_nodes(sb);
     std::vector<Possible_number> pn;
-    for (Node const &nn : n) {
+    for (Node const &nn : gen_nodes(sb)) {
       pn.push_back(find_candidates(nn));
     }
     std::sort(pn.begin(), pn.end());
