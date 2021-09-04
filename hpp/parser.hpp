@@ -6,6 +6,7 @@
 #include <exception>
 #include <iostream>
 #include <cmath>
+#include <algorithm>
 
 using uint = unsigned int;
 
@@ -18,3 +19,4 @@ sudoku_number str_to_num(std::string const &st);
 sudoku_board parse_input(std::string const &input_name);
 void print_board(sudoku_board const &sb);
 uint constexpr sqrt(uint const n);
+uint num_of_unsolved(sudoku_board const &sb);

@@ -3,12 +3,16 @@ HEADERS = $(wildcard hpp/*.hpp)
 SRCS = $(wildcard src/*.cpp)
 OBJS = $(SRCS:src/%.cpp=obj/%.o)
 
-.PHONY = all
+.PHONY = all, clean
 
 
 sudoku: sudoku.cpp $(OBJS) $(HEADERS)
-	clang++ -Wall -Wextra -g -Ihpp $< $(OBJS) -o $@
+	clang++ -std=c++20 -Wall -Wextra -g -Ihpp $< $(OBJS) -o $@
 
 
 obj/%.o : src/%.cpp
-	clang++ -Wall -Wextra -g -Ihpp -c $< -o $@
+	clang++ -std=c++20 -Wall -Wextra -g -Ihpp -c $< -o $@
+
+clean:
+	@rm -f obj/*.o
+	@rm -f sudoku

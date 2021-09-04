@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "solver.hpp"
 #include <iostream>
 
 int main() {
@@ -11,6 +12,21 @@ int main() {
   }
 
   print_board(sb);
+  std::cout << num_of_unsolved(sb) << '\n';
+
+  bool run = true;
+  while (run) {
+    std::vector<Node> n = gen_nodes(sb);
+    std::vector<Possible_number> pn;
+    for (Node const &nn : n) {
+      pn.push_back(find_candidates(nn));
+    }
+
+    run = insert_numbers(sb, pn);
+  }
+  std::cout << '\n';
+  print_board(sb);
+  std::cout << num_of_unsolved(sb) << '\n';
 
   return 0;
 }

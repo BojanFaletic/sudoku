@@ -53,20 +53,8 @@ sudoku_board parse_input(std::string const &input_name) {
   return sb;
 }
 
-uint constexpr sqrt(uint const n) {
-  if (n == 0)
-    return 0;
-  for (uint i = 1; i < n; i++) {
-    if (i * i == n)
-      return i;
-  }
-  return 0;
-}
-
 void print_board(sudoku_board const &sb) {
-  constexpr uint sq_sz = sqrt(SUDOKU_BRD_SIZE);
-  static_assert(sq_sz * sq_sz == SUDOKU_BRD_SIZE,
-                "Board size must be root of integer");
+  const uint sq_sz = std::sqrt(SUDOKU_BRD_SIZE);
 
   auto print_line = [](uint len) {
     for (uint i = 0; i < len; i++)
@@ -74,15 +62,15 @@ void print_board(sudoku_board const &sb) {
     std::cout << '\n';
   };
 
-  for (uint i = 0; i < SUDOKU_BRD_SIZE; i++) {
+  for (uint i = 0; i < sb.size(); i++) {
     if (i % sq_sz == 0) {
-      print_line(SUDOKU_BRD_SIZE-1);
+      print_line(SUDOKU_BRD_SIZE - 1);
     }
-    for (uint j = 0; j < SUDOKU_BRD_SIZE+1; j++) {
+    for (uint j = 0; j < sb.size() + 1; j++) {
       if (j % sq_sz == 0) {
         std::cout << "| ";
       }
-      if (i < SUDOKU_BRD_SIZE && j < SUDOKU_BRD_SIZE) {
+      if (i < sb.size() && j < sb.size()) {
         if (char c = sb[i][j]) {
           std::cout << (char)(c + '0');
         } else {
@@ -93,4 +81,12 @@ void print_board(sudoku_board const &sb) {
     }
     std::cout << '\n';
   }
+}
+
+uint num_of_unsolved(sudoku_board const &sb){
+  uint cnt = 0;
+  for (auto const &l : sb){
+    cnt += std::count_if(l.begin(), l.end(), [](auto &el){return el == 0;});
+  }
+  return cnt;
 }
