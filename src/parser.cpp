@@ -13,14 +13,14 @@ sudoku_number str_to_num(std::string const &st) {
   throw std::runtime_error("Number is not correct\n");
 }
 
-sudoku_board parse_input(std::string const &input_name) {
+Sudoku_board parse_input(std::string const &input_name) {
   std::ifstream file(input_name);
 
   if (!file.is_open()) {
     throw std::runtime_error("File not found\n");
   }
 
-  sudoku_board sb;
+  Sudoku_board sb;
 
   std::string line;
   uint line_cnt = 0;
@@ -38,7 +38,7 @@ sudoku_board parse_input(std::string const &input_name) {
       if (line_cnt == SUDOKU_BRD_SIZE)
         throw std::runtime_error("Column size is to large\n");
 
-      sb[line_cnt][row] = sn;
+      sb({line_cnt, row}) = sn;
       row++;
     }
     if (row != SUDOKU_BRD_SIZE) {
@@ -53,48 +53,49 @@ sudoku_board parse_input(std::string const &input_name) {
   return sb;
 }
 
-void print_board(sudoku_board const &sb) {
+std::ostream &operator<<(std::ostream &os, Sudoku_board const &sb) {
   const uint sq_sz = std::sqrt(SUDOKU_BRD_SIZE);
 
-  auto print_line = [](uint len) {
+  auto print_line = [&](uint len) {
     for (uint i = 0; i < len; i++)
-      std::cout << "-=-";
-    std::cout << '\n';
+      os << "-=-";
+    os << '\n';
   };
 
-  for (uint i = 0; i < sb.size(); i++) {
+  for (uint i = 0; i < sb.size; i++) {
     if (i % sq_sz == 0) {
       print_line(SUDOKU_BRD_SIZE - 1);
     }
-    for (uint j = 0; j < sb.size() + 1; j++) {
+    for (uint j = 0; j < sb.size + 1; j++) {
       if (j % sq_sz == 0) {
-        std::cout << "| ";
+        os << "| ";
       }
-      if (i < sb.size() && j < sb.size()) {
-        if (char c = sb[i][j]) {
-          std::cout << (char)(c + '0');
+      if (i < sb.size && j < sb.size) {
+        if (char c = sb({i, j})) {
+          os << (char)(c + '0');
         } else {
-          std::cout << (char)'X';
+          os << (char)'X';
         }
-        std::cout << ' ';
+        os << ' ';
       }
     }
-    std::cout << '\n';
+    os << '\n';
   }
+  return os;
 }
 
-uint num_of_unsolved(sudoku_board const &sb) {
+uint Sudoku_board::num_of_unsolved() {
   uint cnt = 0;
-  for (auto const &l : sb) {
+  for (auto const &l : board) {
     cnt += std::count_if(l.begin(), l.end(), [](auto &el) { return el == 0; });
   }
   return cnt;
 }
 
-bool is_row_valid(sudoku_board const &bd, Point const &pt) {
+bool is_row_valid(Sudoku_board const &bd, Point const &pt) {
   std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
-  const auto row = bd[pt.y];
-  for (sudoku_number n : row) {
+  const auto row = *(bd.begin() + pt.y);
+  for (sudoku_number const n : row) {
     if (n == 0)
       continue;
     sudoku_number &hist = w[n - 1];
@@ -106,10 +107,10 @@ bool is_row_valid(sudoku_board const &bd, Point const &pt) {
   return true;
 }
 
-bool is_column_valid(sudoku_board const &bd, Point const &pt) {
+bool is_column_valid(Sudoku_board const &bd, Point const &pt) {
   std::array<sudoku_number, SUDOKU_BRD_SIZE> column;
   for (uint i = 0; i < SUDOKU_BRD_SIZE; i++) {
-    column[i] = bd[i][pt.x];
+    column[i] = bd({i, pt.x});
   }
 
   std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
@@ -125,7 +126,7 @@ bool is_column_valid(sudoku_board const &bd, Point const &pt) {
   return true;
 }
 
-bool is_window_valid(sudoku_board const &bd, Point const &pt) {
+bool is_window_valid(Sudoku_board const &bd, Point const &pt) {
   const uint s_w = sqrt(SUDOKU_BRD_SIZE);
   const Point s_pt(pt.quantize(s_w));
 
@@ -134,7 +135,7 @@ bool is_window_valid(sudoku_board const &bd, Point const &pt) {
   std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
   for (uint i = 0; i < s_w; i++) {
     for (uint j = 0; j < s_w; j++) {
-      const sudoku_number number = bd[i + s_pt.y][j + s_pt.x];
+      const sudoku_number number = bd({i + s_pt.y, j + s_pt.x});
       if (number == 0)
         continue;
       sudoku_number &hist = w[number - 1];
@@ -147,29 +148,34 @@ bool is_window_valid(sudoku_board const &bd, Point const &pt) {
   return true;
 }
 
-bool check_all_windows(sudoku_board const &bd) {
+bool check_all_windows(Sudoku_board const &bd) {
   const uint sn = sqrt(SUDOKU_BRD_SIZE);
-  for (uint i = 0; i < bd.size(); i += sn) {
-    for (uint j = 0; j < bd.size(); j += sn) {
-      if (!is_window_valid(bd, {i, j}))
+  for (uint i = 0; i < bd.size; i += sn) {
+    for (uint j = 0; j < bd.size; j += sn) {
+      if (!is_window_valid(bd, {i, j})) {
+        // std::cout << "Invalid at window: " <<Point(i, j) << '\n';
         return false;
+      }
     }
   }
   return true;
 }
 
-bool is_board_valid(sudoku_board const &bd) {
-  if (!check_all_windows(bd))
+bool is_board_valid(Sudoku_board const &bd) {
+  if (!check_all_windows(bd)) {
+    // std::cout << "Invalid in window\n";
     return false;
+  }
 
-  std::cout << "here\n";
-  for (uint i = 0; i < bd.size(); i++) {
-    for (uint j = 0; j < bd.size(); j++) {
+  for (uint i = 0; i < bd.size; i++) {
+    for (uint j = 0; j < bd.size; j++) {
       const Point pt{i, j};
       const bool is_row_col_valid =
           is_column_valid(bd, pt) && is_row_valid(bd, pt);
-      if (!is_row_col_valid)
+      if (!is_row_col_valid) {
+        // std::cout << "invalid here " << pt << '\n';
         return false;
+      }
     }
   }
   return true;

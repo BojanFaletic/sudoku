@@ -3,7 +3,7 @@
 #include <iostream>
 
 int main() {
-  sudoku_board sb;
+  Sudoku_board sb;
 
   try {
     sb = parse_input("input.txt");
@@ -11,23 +11,22 @@ int main() {
     std::cout << e.what();
   }
 
-  print_board(sb);
-  std::cout << num_of_unsolved(sb) << '\n';
+  std::cout << sb;
+  std::cout << sb.num_of_unsolved() << '\n';
 
-  bool run = true;
-  while (run) {
-    std::vector<Node> n = gen_nodes(sb);
-    std::vector<Possible_number> pn;
-    for (Node const &nn : n) {
-      pn.push_back(find_candidates(nn));
-    }
-    std::sort(pn.begin(), pn.end());
-    run = insert_numbers(sb, pn);
-  }
+  single_solve(sb);
+
   std::cout << '\n';
-  print_board(sb);
-  std::cout << num_of_unsolved(sb) << '\n';
+  std::cout << sb;
+  std::cout << sb.num_of_unsolved() << '\n';
 
+  std::cout << "is board valid: " << is_board_valid(sb) << '\n';
+
+  // test brute force
+  brute_fore_search(sb);
+  std::cout << '\n';
+  std::cout << sb;
+  std::cout << sb.num_of_unsolved() << '\n';
   std::cout << "is board valid: " << is_board_valid(sb) << '\n';
 
   return 0;
