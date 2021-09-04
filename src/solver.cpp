@@ -39,31 +39,23 @@ std::vector<Node> gen_nodes(Sudoku_board const &bd) {
   return nds;
 }
 
-Possible_number find_candidates(Node const &nd) {
-  // find missing number in row, column and window
-  std::vector<sudoku_number> c, r, s;
-  for (uint i = 1; i < 10; i++) {
-    if (!any_of(nd.row, i)) {
-      r.push_back(i);
-    }
-    if (!any_of(nd.column, i)) {
-      c.push_back(i);
-    }
-    if (!any_of(nd.window, i)) {
-      s.push_back(i);
-    }
-  }
+std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
+  std::vector<Possible_number> ps_out;
+  for (Node const &nd : gen_nodes(bd)) {
+    // find missing number in row, column and window
+    std::vector<sudoku_number> candidates;
+    candidates.reserve(9);
+    for (uint i = 1; i < 10; i++) {
+      const bool is_num_valid =
+          any_of(nd.row, i) || any_of(nd.column, i) || any_of(nd.window, i);
 
-  // Candidate number is intersection within c, r, s
-  std::vector<sudoku_number> candidates;
-  for (sudoku_number n : r) {
-    if (any_of(c, n) && any_of(r, n)) {
-      candidates.push_back(n);
+      if (!is_num_valid)
+        candidates.push_back(i);
     }
+    ps_out.push_back(Possible_number{nd.pt, candidates});
   }
-
-  Possible_number pn{nd.pt, candidates};
-  return pn;
+  std::sort(ps_out.begin(), ps_out.end());
+  return ps_out;
 }
 
 bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
@@ -80,13 +72,7 @@ bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
 bool brute_fore_search(Sudoku_board &sb) {
   single_solve(sb);
 
-  std::vector<Possible_number> pn;
-  for (Node const &nn : gen_nodes(sb)) {
-    pn.push_back(find_candidates(nn));
-  }
-  std::sort(pn.begin(), pn.end());
-
-  for (Possible_number &best : pn) {
+  for (Possible_number &best : find_candidates(sb)) {
     Sudoku_board virtual_board = sb;
 
     for (uint i = 0; i < best.candidate.size(); i++) {
@@ -113,11 +99,7 @@ bool brute_fore_search(Sudoku_board &sb) {
 
 void single_solve(Sudoku_board &sb) {
   while (true) {
-    std::vector<Possible_number> pn;
-    for (Node const &nn : gen_nodes(sb)) {
-      pn.push_back(find_candidates(nn));
-    }
-    std::sort(pn.begin(), pn.end());
+    const auto pn = find_candidates(sb);
     if (!insert_numbers(sb, pn))
       break;
   }

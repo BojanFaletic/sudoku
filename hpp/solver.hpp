@@ -14,7 +14,7 @@ struct Possible_number {
   std::vector<sudoku_number> candidate;
 
   // used for sorting
-  bool operator<(Possible_number const &pn) {
+  bool operator<(Possible_number const &pn) const{
     return candidate.size() < pn.candidate.size();
   }
 
@@ -35,7 +35,7 @@ template <typename T, typename C> bool any_of(T arr, C fun) {
 }
 
 std::vector<Node> gen_nodes(Sudoku_board const &bd);
-Possible_number find_candidates(Node const &nd);
+std::vector<Possible_number> find_candidates(Sudoku_board const &bd);
 
 numbers_rule gen_row(Sudoku_board const &bd, Point const &pt);
 numbers_rule gen_column(Sudoku_board const &bd, Point const &pt);

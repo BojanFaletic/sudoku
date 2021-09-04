@@ -31,12 +31,13 @@ int main() {
     auto s = d.sample();
     if (s.has_value()) {
       auto [puzzle, solution] = s.value();
-      sb.total++;
 
-      if (sb.total % 1000 == 0) {
-        std::cout << sb << '\n';
+      if (sb.total % 1000 == 0 && sb.total > 0) {
+        std::cout << sb.total << " " << sb << '\n';
         break;
       }
+
+      sb.total++;
 
       // try to solve it
       brute_fore_search(puzzle);
