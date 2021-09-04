@@ -89,13 +89,16 @@ bool brute_fore_search(Sudoku_board &sb) {
   for (Possible_number &best : pn) {
     Sudoku_board virtual_board = sb;
 
-    for (sudoku_number const n : best.candidate) {
+
+    for (uint i=0; i<best.candidate.size(); i++){
+      uint n = best.candidate[i];
       virtual_board(best.pt) = n;
 
       single_solve(virtual_board);
       if (!is_board_valid(virtual_board)) {
         auto iter = std::find(best.candidate.begin(), best.candidate.end(), n);
         best.candidate.erase(iter);
+        i--;
       }
     }
 

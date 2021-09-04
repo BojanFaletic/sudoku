@@ -1,11 +1,13 @@
+#include "ScoreBoard.hpp"
 #include "csv_generator.hpp"
 #include "parser.hpp"
 #include "solver.hpp"
 #include <iostream>
 
-int main() {
+#define USE_INPUT_FILE 0
 
-#if 0
+int main() {
+#if USE_INPUT_FILE
   Sudoku_board sb;
   try {
     sb = parse_input("input.txt");
@@ -19,34 +21,43 @@ int main() {
   bool is_solved = (is_board_valid(sb) && sb.num_of_unsolved() == 0);
   std::cout << "\nAfter search:" << (is_solved ? "Solved" : "Unsolved") << '\n';
   std::cout << sb;
-#endif
+
+#else
 
   CSV_generator d("sudoku.csv");
-  uint score = 0;
+  ScoreBoard sb;
 
   while (true) {
-    if (auto s = d.sample()) {
+    auto s = d.sample();
+    if (s.has_value()) {
       auto [puzzle, solution] = s.value();
+      sb.total++;
+
+      if (sb.total % 1000 == 0) {
+        std::cout << sb << '\n';
+        break;
+      }
 
       // try to solve it
       brute_fore_search(puzzle);
 
       bool is_solved = puzzle == solution;
       if (is_solved) {
-        score++;
+        sb.correct++;
       } else {
-        std::cout << puzzle << '\n';
-        std::cout << solution;
-        std::cout << "stopped at: " << score << '\n';
-        break;
+        if (false) {
+          std::cout << puzzle << '\n';
+          std::cout << solution;
+          std::cout << "stopped at: " << sb.correct << '\n';
+          break;
+        }
       }
-      score += is_solved;
     } else {
       break;
     }
   }
+  std::cout << "Final score: " << sb.correct << '\n';
 
-  std::cout << "Final score: " << score << '\n';
-
+#endif
   return 0;
 }
