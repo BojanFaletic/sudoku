@@ -89,8 +89,7 @@ bool brute_fore_search(Sudoku_board &sb) {
   for (Possible_number &best : pn) {
     Sudoku_board virtual_board = sb;
 
-
-    for (uint i=0; i<best.candidate.size(); i++){
+    for (uint i = 0; i < best.candidate.size(); i++) {
       uint n = best.candidate[i];
       virtual_board(best.pt) = n;
 
