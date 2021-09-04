@@ -57,9 +57,10 @@ struct Sudoku_board {
   sudoku_number &operator()(Point const &pt) { return board[pt.y][pt.x]; }
   sudoku_number operator()(Point const &pt) const { return board[pt.y][pt.x]; }
 
-  uint num_of_unsolved();
+  uint num_of_unsolved() const;
+  bool is_solved() const { return num_of_unsolved() == 0; }
 
-  bool operator==(Sudoku_board const &sb) const{
+  bool operator==(Sudoku_board const &sb) const {
     for (uint i = 0; i < sb.size; i++) {
       for (uint j = 0; j < sb.size; j++) {
         const Point pt{i, j};

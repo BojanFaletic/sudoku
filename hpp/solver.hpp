@@ -14,7 +14,7 @@ struct Possible_number {
   std::vector<sudoku_number> candidate;
 
   // used for sorting
-  bool operator<(Possible_number const &pn) const{
+  bool operator<(Possible_number const &pn) const {
     return candidate.size() < pn.candidate.size();
   }
 

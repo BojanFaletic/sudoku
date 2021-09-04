@@ -84,7 +84,7 @@ std::ostream &operator<<(std::ostream &os, Sudoku_board const &sb) {
   return os;
 }
 
-uint Sudoku_board::num_of_unsolved() {
+uint Sudoku_board::num_of_unsolved() const {
   uint cnt = 0;
   for (auto const &l : board) {
     cnt += std::count_if(l.begin(), l.end(), [](auto &el) { return el == 0; });

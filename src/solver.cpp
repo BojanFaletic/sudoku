@@ -62,7 +62,7 @@ bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
   bool valid = false;
   for (Possible_number const &p : pn) {
     if (p.candidate.size() == 1) {
-      sb(p.pt) = p.candidate[0];
+      sb(p.pt) = p.candidate.front();
       valid = true;
     }
   }
@@ -71,28 +71,24 @@ bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
 
 bool brute_fore_search(Sudoku_board &sb) {
   single_solve(sb);
-
   for (Possible_number &best : find_candidates(sb)) {
     Sudoku_board virtual_board = sb;
-
-    for (uint i = 0; i < best.candidate.size(); i++) {
-      uint n = best.candidate[i];
+    auto remove_condition = [&](uint n) {
       virtual_board(best.pt) = n;
-
       single_solve(virtual_board);
-      if (!is_board_valid(virtual_board)) {
-        auto iter = std::find(best.candidate.begin(), best.candidate.end(), n);
-        best.candidate.erase(iter);
-        i--;
-      }
-    }
+      return !is_board_valid(virtual_board);
+    };
 
-    if (best.candidate.size() == 1) {
-      sb(best.pt) = best.candidate[0];
-    }
-    if (sb.num_of_unsolved() == 0)
+    std::remove_if(best.candidate.begin(), best.candidate.end(),
+                   remove_condition);
+
+    if (best.candidate.size() == 1)
+      sb(best.pt) = best.candidate.front();
+
+    if (sb.is_solved())
       return true;
-    single_solve(sb);
+    else
+      single_solve(sb);
   }
   return false;
 }
