@@ -21,12 +21,14 @@ int main() {
     for (Node const &nn : n) {
       pn.push_back(find_candidates(nn));
     }
-
+    std::sort(pn.begin(), pn.end());
     run = insert_numbers(sb, pn);
   }
   std::cout << '\n';
   print_board(sb);
   std::cout << num_of_unsolved(sb) << '\n';
+
+  std::cout << "is board valid: " << is_board_valid(sb) << '\n';
 
   return 0;
 }

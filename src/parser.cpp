@@ -83,10 +83,94 @@ void print_board(sudoku_board const &sb) {
   }
 }
 
-uint num_of_unsolved(sudoku_board const &sb){
+uint num_of_unsolved(sudoku_board const &sb) {
   uint cnt = 0;
-  for (auto const &l : sb){
-    cnt += std::count_if(l.begin(), l.end(), [](auto &el){return el == 0;});
+  for (auto const &l : sb) {
+    cnt += std::count_if(l.begin(), l.end(), [](auto &el) { return el == 0; });
   }
   return cnt;
+}
+
+bool is_row_valid(sudoku_board const &bd, Point const &pt) {
+  std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
+  const auto row = bd[pt.y];
+  for (sudoku_number n : row) {
+    if (n == 0)
+      continue;
+    sudoku_number &hist = w[n - 1];
+    if (hist == 1)
+      return false;
+    else
+      hist++;
+  }
+  return true;
+}
+
+bool is_column_valid(sudoku_board const &bd, Point const &pt) {
+  std::array<sudoku_number, SUDOKU_BRD_SIZE> column;
+  for (uint i = 0; i < SUDOKU_BRD_SIZE; i++) {
+    column[i] = bd[i][pt.x];
+  }
+
+  std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
+  for (sudoku_number n : column) {
+    if (n == 0)
+      continue;
+    sudoku_number &hist = w[n - 1];
+    if (hist == 1)
+      return false;
+    else
+      hist++;
+  }
+  return true;
+}
+
+bool is_window_valid(sudoku_board const &bd, Point const &pt) {
+  const uint s_w = sqrt(SUDOKU_BRD_SIZE);
+  const Point s_pt(pt.quantize(s_w));
+
+  // count number of each number in window, if same number appears twice then
+  // board is invalid
+  std::array<sudoku_number, SUDOKU_BRD_SIZE> w{0};
+  for (uint i = 0; i < s_w; i++) {
+    for (uint j = 0; j < s_w; j++) {
+      const sudoku_number number = bd[i + s_pt.y][j + s_pt.x];
+      if (number == 0)
+        continue;
+      sudoku_number &hist = w[number - 1];
+      if (hist == 1)
+        return false;
+      else
+        hist++;
+    }
+  }
+  return true;
+}
+
+bool check_all_windows(sudoku_board const &bd) {
+  const uint sn = sqrt(SUDOKU_BRD_SIZE);
+  for (uint i = 0; i < bd.size(); i += sn) {
+    for (uint j = 0; j < bd.size(); j += sn) {
+      if (!is_window_valid(bd, {i, j}))
+        return false;
+    }
+  }
+  return true;
+}
+
+bool is_board_valid(sudoku_board const &bd) {
+  if (!check_all_windows(bd))
+    return false;
+
+  std::cout << "here\n";
+  for (uint i = 0; i < bd.size(); i++) {
+    for (uint j = 0; j < bd.size(); j++) {
+      const Point pt{i, j};
+      const bool is_row_col_valid =
+          is_column_valid(bd, pt) && is_row_valid(bd, pt);
+      if (!is_row_col_valid)
+        return false;
+    }
+  }
+  return true;
 }

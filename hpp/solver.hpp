@@ -4,10 +4,6 @@
 
 using numbers_rule = std::array<sudoku_number, SUDOKU_BRD_SIZE>;
 
-struct Point {
-  uint y, x;
-};
-
 struct Node {
   Point pt;
   numbers_rule row, column, window;
@@ -16,6 +12,11 @@ struct Node {
 struct Possible_number {
   Point pt;
   std::vector<sudoku_number> candidate;
+
+  // used for sorting
+  bool operator<(Possible_number const &pn){
+    return candidate.size() < pn.candidate.size();
+  }
 };
 
 template <typename T, typename C> bool any_of(T arr, C fun) {

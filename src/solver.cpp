@@ -14,7 +14,7 @@ numbers_rule gen_column(sudoku_board const &bd, Point const &pt) {
 
 numbers_rule gen_square(sudoku_board const &bd, Point const &pt) {
   const uint sq_sz = std::sqrt(SUDOKU_BRD_SIZE);
-  const Point s_pt{(pt.y / sq_sz) * sq_sz, (pt.x / sq_sz) * sq_sz};
+  const Point s_pt{pt.quantize(sq_sz)};
   numbers_rule nb;
   uint idx = 0;
   for (uint i = 0; i < sq_sz; i++) {
