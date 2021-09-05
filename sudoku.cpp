@@ -32,7 +32,7 @@ int main() {
     if (s.has_value()) {
       auto [puzzle, solution] = s.value();
 
-      if (sb.total % 10000 == 0 && sb.total > 0) {
+      if (sb.total % 100000 == 0 && sb.total > 0) {
         std::cout << sb.total << " " << sb << '\n';
         break;
       }

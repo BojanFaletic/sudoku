@@ -1,7 +1,6 @@
 #pragma once
 #include "parser.hpp"
 #include "static_vector.hpp"
-#include <vector>
 
 using numbers_rule = std::array<sudoku_number, SUDOKU_BRD_SIZE>;
 
@@ -41,7 +40,7 @@ template <typename T, typename C> void for_each(T arr, C fun) {
 
 // vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd);
 static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd);
-std::vector<Possible_number> find_candidates(Sudoku_board const &bd);
+static_vector<Possible_number, SUDOKU_AREA_SIZE> find_candidates(Sudoku_board const &bd);
 
 numbers_rule gen_row(Sudoku_board const &bd, Point const &pt);
 numbers_rule gen_column(Sudoku_board const &bd, Point const &pt);

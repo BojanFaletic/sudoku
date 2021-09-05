@@ -40,16 +40,17 @@ static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd) {
   return nds;
 }
 
-std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
-  std::vector<Possible_number> ps_out;
+static_vector<Possible_number, SUDOKU_AREA_SIZE>
+find_candidates(Sudoku_board const &bd) {
+  static_vector<Possible_number, SUDOKU_AREA_SIZE> ps_out;
+
   for (Point const &pt : gen_points(bd)) {
     // find missing number in row, column and window
-    static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidates;
 
     // find number relevent numbers
-    numbers_rule row = gen_row(bd, pt);
-    numbers_rule column = gen_column(bd, pt);
-    numbers_rule window = gen_square(bd, pt);
+    const numbers_rule row = gen_row(bd, pt);
+    const numbers_rule column = gen_column(bd, pt);
+    const numbers_rule window = gen_square(bd, pt);
 
     // calculate histogram
     std::array<sudoku_number, SUDOKU_BRD_SIZE + 1> r{0}, c{0}, w{0};
@@ -58,6 +59,7 @@ std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
     for_each(window, [&w](uint i) { w[i]++; });
 
     // if number is can be this possition add it to list of caandidate moves
+    static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidates;
     for (uint i = 1; i < 10; i++) {
       const bool is_num_valid = !r[i] && !c[i] && !w[i];
       if (is_num_valid)
@@ -69,7 +71,7 @@ std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
   return ps_out;
 }
 
-bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
+bool insert_numbers(Sudoku_board &sb, auto const &pn) {
   bool valid = false;
   if (sb.is_solved())
     return false;
