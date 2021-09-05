@@ -1,6 +1,9 @@
-#pragma once
+#ifndef SCORE_BOARD_HPP
+#define SCORE_BOARD_HPP
+
 #include "parser.hpp"
 
+// used for storing sudoku win/loose ratio statistics
 class ScoreBoard {
 public:
   ScoreBoard() : correct{0}, total{0} {}
@@ -12,3 +15,5 @@ public:
     return os;
   }
 };
+
+#endif

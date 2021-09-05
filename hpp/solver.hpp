@@ -1,33 +1,11 @@
-#pragma once
+#ifndef SOLVER_HPP
+#define SOLVER_HPP
+
 #include "parser.hpp"
 #include "static_vector.hpp"
-
-using numbers_rule = std::array<sudoku_number, SUDOKU_BRD_SIZE>;
-
-struct Node {
-  Point pt;
-  numbers_rule row, column, window;
-};
-
-struct Possible_number {
-  Point pt;
-  static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidate;
-
-  // used for sorting
-  bool operator<(Possible_number const &pn) const {
-    return candidate.size() < pn.candidate.size();
-  }
-
-  friend std::ostream &operator<<(std::ostream &os, Possible_number const &pn) {
-    os << pn.pt;
-    os << "c: ";
-    for (sudoku_number n : pn.candidate) {
-      os << n << " ";
-    }
-    os << '\n';
-    return os;
-  }
-};
+#include "types.hpp"
+#include <algorithm>
+#include <vector>
 
 template <typename T, typename C> bool any_of(T arr, C fun) {
   auto comparison = [&](C n) { return n == fun; };
@@ -35,7 +13,7 @@ template <typename T, typename C> bool any_of(T arr, C fun) {
 }
 
 template <typename T, typename C> void for_each(T arr, C fun) {
-  std::for_each(begin(arr), end(arr), fun);
+  std::for_each_n(begin(arr), arr.size(), fun);
 }
 
 static_vector<Possible_number, SUDOKU_AREA_SIZE>
@@ -52,3 +30,5 @@ void single_solve(Sudoku_board &sb);
 
 // solving sudoku via brute force search
 bool brute_fore_search(Sudoku_board &sb);
+
+#endif
