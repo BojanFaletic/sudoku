@@ -7,7 +7,8 @@ numbers_rule gen_row(Sudoku_board const &bd, Point const &pt) {
 numbers_rule gen_column(Sudoku_board const &bd, Point const &pt) {
   numbers_rule nb;
   for (uint i = 0; i < bd.size; i++) {
-    nb[i] = bd(Point(i, pt.x));
+    const Point pp(i, pt.x);
+    nb[i] = bd(pp);
   }
   return nb;
 }
@@ -15,24 +16,24 @@ numbers_rule gen_column(Sudoku_board const &bd, Point const &pt) {
 numbers_rule gen_square(Sudoku_board const &bd, Point const &pt) {
   const uint sq_sz = std::sqrt(SUDOKU_BRD_SIZE);
   const Point s_pt{pt.quantize(sq_sz)};
-  numbers_rule nb;
+  numbers_rule nb{0};
   uint idx = 0;
-  for (uint i = 0; i < sq_sz; i++) {
-    for (uint j = 0; j < sq_sz; j++) {
-      nb[idx++] = bd({i + s_pt.y, j + s_pt.x});
+  for (uint i = s_pt.y; i < s_pt.y + sq_sz; i++) {
+    for (uint j = s_pt.x; j < s_pt.x + sq_sz; j++) {
+      const Point pp{i, j};
+      nb[idx++] = bd(pp);
     }
   }
   return nb;
 }
 
-std::vector<Node> gen_nodes(Sudoku_board const &bd) {
-  std::vector<Node> nds;
+static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd) {
+  static_vector<Point, SUDOKU_AREA_SIZE> nds;
   for (uint i = 0; i < bd.size; i++) {
     for (uint j = 0; j < bd.size; j++) {
-      const Point pt{i, j};
+      const Point pt(i, j);
       if (bd(pt) == 0) {
-        Node nd{pt, gen_row(bd, pt), gen_column(bd, pt), gen_square(bd, pt)};
-        nds.push_back(nd);
+        nds.push_back(pt);
       }
     }
   }
@@ -41,18 +42,28 @@ std::vector<Node> gen_nodes(Sudoku_board const &bd) {
 
 std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
   std::vector<Possible_number> ps_out;
-  for (Node const &nd : gen_nodes(bd)) {
+  for (Point const &pt : gen_points(bd)) {
     // find missing number in row, column and window
-    std::vector<sudoku_number> candidates;
-    candidates.reserve(9);
-    for (uint i = 1; i < 10; i++) {
-      const bool is_num_valid =
-          any_of(nd.row, i) || any_of(nd.column, i) || any_of(nd.window, i);
+    static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidates;
 
-      if (!is_num_valid)
+    // find number relevent numbers
+    numbers_rule row = gen_row(bd, pt);
+    numbers_rule column = gen_column(bd, pt);
+    numbers_rule window = gen_square(bd, pt);
+
+    // calculate histogram
+    std::array<sudoku_number, SUDOKU_BRD_SIZE + 1> r{0}, c{0}, w{0};
+    for_each(row, [&r](uint i) { r[i]++; });
+    for_each(column, [&c](uint i) { c[i]++; });
+    for_each(window, [&w](uint i) { w[i]++; });
+
+    // if number is can be this possition add it to list of caandidate moves
+    for (uint i = 1; i < 10; i++) {
+      const bool is_num_valid = !r[i] && !c[i] && !w[i];
+      if (is_num_valid)
         candidates.push_back(i);
     }
-    ps_out.push_back(Possible_number{nd.pt, candidates});
+    ps_out.push_back(Possible_number{pt, candidates});
   }
   std::sort(ps_out.begin(), ps_out.end());
   return ps_out;
@@ -60,9 +71,11 @@ std::vector<Possible_number> find_candidates(Sudoku_board const &bd) {
 
 bool insert_numbers(Sudoku_board &sb, std::vector<Possible_number> const &pn) {
   bool valid = false;
+  if (sb.is_solved())
+    return false;
   for (Possible_number const &p : pn) {
     if (p.candidate.size() == 1) {
-      sb(p.pt) = p.candidate.front();
+      sb(p.pt) = p.candidate[0];
       valid = true;
     }
   }
@@ -83,7 +96,7 @@ bool brute_fore_search(Sudoku_board &sb) {
                    remove_condition);
 
     if (best.candidate.size() == 1)
-      sb(best.pt) = best.candidate.front();
+      sb(best.pt) = best.candidate[0];
 
     if (sb.is_solved())
       return true;

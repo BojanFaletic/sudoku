@@ -1,5 +1,6 @@
 #pragma once
 #include "parser.hpp"
+#include "static_vector.hpp"
 #include <vector>
 
 using numbers_rule = std::array<sudoku_number, SUDOKU_BRD_SIZE>;
@@ -11,7 +12,7 @@ struct Node {
 
 struct Possible_number {
   Point pt;
-  std::vector<sudoku_number> candidate;
+  static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidate;
 
   // used for sorting
   bool operator<(Possible_number const &pn) const {
@@ -34,7 +35,12 @@ template <typename T, typename C> bool any_of(T arr, C fun) {
   return std::any_of(begin(arr), end(arr), comparison);
 }
 
-std::vector<Node> gen_nodes(Sudoku_board const &bd);
+template <typename T, typename C> void for_each(T arr, C fun) {
+  std::for_each(begin(arr), end(arr), fun);
+}
+
+// vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd);
+static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd);
 std::vector<Possible_number> find_candidates(Sudoku_board const &bd);
 
 numbers_rule gen_row(Sudoku_board const &bd, Point const &pt);

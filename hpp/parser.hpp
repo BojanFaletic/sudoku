@@ -12,11 +12,14 @@
 using uint = unsigned int;
 
 constexpr uint SUDOKU_BRD_SIZE = 9;
+constexpr uint SUDOKU_AREA_SIZE = SUDOKU_BRD_SIZE * SUDOKU_BRD_SIZE;
+
 using sudoku_number = unsigned short;
 
 struct Point {
   uint y, x;
 
+  Point() : y{1000}, x{1000} {}
   Point(uint y, uint x) : y{y}, x{x} {}
   Point(Point const &pt) : y{pt.y}, x{pt.x} {}
   ~Point() = default;
