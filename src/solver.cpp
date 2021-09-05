@@ -27,7 +27,7 @@ numbers_rule gen_square(Sudoku_board const &bd, Point const &pt) {
   return nb;
 }
 
-static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd) {
+auto gen_points(Sudoku_board const &bd) {
   static_vector<Point, SUDOKU_AREA_SIZE> nds;
   for (uint i = 0; i < bd.size; i++) {
     for (uint j = 0; j < bd.size; j++) {
@@ -40,28 +40,45 @@ static_vector<Point, SUDOKU_AREA_SIZE> gen_points(Sudoku_board const &bd) {
   return nds;
 }
 
+auto gen_all_cases(Sudoku_board const &sb) {
+  std::array<std::array<std::array<sudoku_number, 10>, 3>, SUDOKU_BRD_SIZE> out;
+
+  for (uint i = 0; i < sb.size; i++) {
+    const numbers_rule row = gen_row(sb, {i, 0});
+    const numbers_rule column = gen_column(sb, {0, i});
+    const Point pt{(i / 3) * 3, (i % 3) * 3};
+    const numbers_rule square = gen_square(sb, pt);
+
+    std::array<sudoku_number, SUDOKU_BRD_SIZE + 1> r_h{0}, c_h{0}, w_h{0};
+    for_each(row, [&r_h](uint i) { r_h[i]++; });
+    for_each(column, [&c_h](uint i) { c_h[i]++; });
+    for_each(square, [&w_h](uint i) { w_h[i]++; });
+
+    out[i] = {r_h, c_h, w_h};
+  }
+
+  return out;
+}
+
 static_vector<Possible_number, SUDOKU_AREA_SIZE>
 find_candidates(Sudoku_board const &bd) {
   static_vector<Possible_number, SUDOKU_AREA_SIZE> ps_out;
 
-  for (Point const &pt : gen_points(bd)) {
+  // precompute lookup table
+  const auto unsolved_points = gen_points(bd);
+  const auto possible_values = gen_all_cases(bd);
+
+  for (Point const &pt : unsolved_points) {
     // find missing number in row, column and window
-
-    // find number relevent numbers
-    const numbers_rule row = gen_row(bd, pt);
-    const numbers_rule column = gen_column(bd, pt);
-    const numbers_rule window = gen_square(bd, pt);
-
-    // calculate histogram
-    std::array<sudoku_number, SUDOKU_BRD_SIZE + 1> r{0}, c{0}, w{0};
-    for_each(row, [&r](uint i) { r[i]++; });
-    for_each(column, [&c](uint i) { c[i]++; });
-    for_each(window, [&w](uint i) { w[i]++; });
+    const uint py{pt.y}, px{pt.x}, pw{(pt.y / 3) * 3 + pt.x / 3};
+    const auto r_v = possible_values[py][0];
+    const auto c_v = possible_values[px][1];
+    const auto w_v = possible_values[pw][2];
 
     // if number is can be this possition add it to list of caandidate moves
     static_vector<sudoku_number, SUDOKU_BRD_SIZE> candidates;
     for (uint i = 1; i < 10; i++) {
-      const bool is_num_valid = !r[i] && !c[i] && !w[i];
+      const bool is_num_valid = !r_v[i] && !c_v[i] && !w_v[i];
       if (is_num_valid)
         candidates.push_back(i);
     }
@@ -79,6 +96,8 @@ bool insert_numbers(Sudoku_board &sb, auto const &pn) {
     if (p.candidate.size() == 1) {
       sb(p.pt) = p.candidate[0];
       valid = true;
+    } else {
+      return valid;
     }
   }
   return valid;
